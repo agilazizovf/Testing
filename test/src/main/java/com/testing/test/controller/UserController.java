@@ -6,10 +6,7 @@ import com.testing.test.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -21,5 +18,10 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserResponse> add(@RequestBody @Valid UserRequest userRequest) {
         return userService.add(userRequest);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> findUserById(@PathVariable(name = "id") Long id) {
+        return userService.findUserById(id);
     }
 }

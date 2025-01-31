@@ -35,4 +35,14 @@ public class UserService {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    public ResponseEntity<UserResponse> findUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new TestingException("User not found"));
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setUsername(user.getUsername());
+
+        return ResponseEntity.ok(response);
+    }
 }
