@@ -6,6 +6,7 @@ import com.testing.test.request.UserRequest;
 import com.testing.test.response.UserResponse;
 import com.testing.test.service.UserService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -23,15 +25,18 @@ import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(SpringExtension.class)
 public class UserControllerTests {
 
     @Autowired
@@ -186,4 +191,30 @@ public class UserControllerTests {
                 .andExpect(jsonPath("$.username").value("user99"))
                 .andDo(print());
     }
+
+    @Test
+    public void testDeleteShouldReturn404NotFound() throws Exception {
+        Long userId = 1L;
+        String URL = END_POINT_PATH + "/" + userId;
+
+        doThrow(new TestingException("User not found")).when(userService).delete(userId);
+
+        mockMvc.perform(delete(URL))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("User not found"))
+                .andDo(print());
+    }
+
+    @Test
+    public void testDeleteShouldReturn200OK() throws Exception {
+        Long userId = 1L;
+        String URL = END_POINT_PATH + "/" + userId;
+
+        when(userService.delete(userId)).thenReturn(ResponseEntity.ok("User deleted successfully"));
+        mockMvc.perform(delete(URL))
+                .andExpect(status().isOk())
+                .andExpect(content().string("User deleted successfully"))
+                .andDo(print());
+    }
+
 }

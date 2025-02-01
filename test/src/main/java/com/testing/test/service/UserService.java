@@ -70,4 +70,12 @@ public class UserService {
         modelMapper.map(user, response);
         return ResponseEntity.ok(response);
     }
+
+    public ResponseEntity<String> delete(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new TestingException("User not found"));
+        userRepository.deleteById(user.getId());
+
+        return ResponseEntity.ok("User deleted successfully");
+    }
 }
