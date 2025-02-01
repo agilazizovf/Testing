@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -44,5 +47,15 @@ public class UserService {
         response.setUsername(user.getUsername());
 
         return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+
+        List<UserResponse> userResponses = users.stream()
+                .map(user -> new UserResponse(user.getId(), user.getUsername()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(userResponses);
     }
 }

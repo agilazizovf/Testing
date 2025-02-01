@@ -15,6 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -86,6 +90,56 @@ public class UserControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("user1"))
+                .andDo(print());
+    }
+
+    @Test
+    public void testListShouldReturn204NoContent() throws Exception {
+        Mockito.when(userService.getAllUsers()).thenReturn(ResponseEntity.noContent().build());
+        mockMvc.perform(get(END_POINT_PATH))
+                .andExpect(status().isNoContent())
+                .andDo(print());
+    }
+
+    @Test
+    public void testListShouldReturn200OK() throws Exception {
+        List<UserResponse> responses = new ArrayList<>();
+
+        UserResponse user1 = new UserResponse();
+        user1.setId(1L);
+        user1.setUsername("user1");
+
+        UserResponse user2 = new UserResponse();
+        user2.setId(2L);
+        user2.setUsername("user2");
+
+        UserResponse user3 = new UserResponse();
+        user3.setId(3L);
+        user3.setUsername("user3");
+
+        UserResponse user4 = new UserResponse();
+        user4.setId(4L);
+        user4.setUsername("user4");
+
+        responses.add(user1);
+        responses.add(user2);
+        responses.add(user3);
+        responses.add(user4);
+
+        when(userService.getAllUsers()).thenReturn(ResponseEntity.ok(responses));
+
+        mockMvc.perform(get(END_POINT_PATH))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(4))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].username").value("user1"))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].username").value("user2"))
+                .andExpect(jsonPath("$[2].id").value(3))
+                .andExpect(jsonPath("$[2].username").value("user3"))
+                .andExpect(jsonPath("$[3].id").value(4))
+                .andExpect(jsonPath("$[3].username").value("user4"))
                 .andDo(print());
     }
 }
