@@ -58,4 +58,16 @@ public class UserService {
 
         return ResponseEntity.ok(userResponses);
     }
+
+    public ResponseEntity<UserResponse> update(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new TestingException("User not found"));
+        user.setUsername(request.getUsername());
+        user.setPassword("{noop}"+request.getPassword());
+        userRepository.save(user);
+
+        UserResponse response = new UserResponse();
+        modelMapper.map(user, response);
+        return ResponseEntity.ok(response);
+    }
 }

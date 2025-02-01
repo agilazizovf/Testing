@@ -18,8 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -140,6 +142,48 @@ public class UserControllerTests {
                 .andExpect(jsonPath("$[2].username").value("user3"))
                 .andExpect(jsonPath("$[3].id").value(4))
                 .andExpect(jsonPath("$[3].username").value("user4"))
+                .andDo(print());
+    }
+
+    @Test
+    public void testUpdateShouldReturn404NotFound() throws Exception {
+        Long userId = 1L;
+        String URL = END_POINT_PATH + "/" + userId;
+
+        UserRequest request = new UserRequest();
+        request.setUsername("user99");
+        request.setPassword("{noop}13579");
+
+        when(userService.update(userId, request)).thenThrow(new TestingException("User not found"));
+
+        mockMvc.perform(put(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    public void testUpdateShouldReturn200OK() throws Exception {
+        Long userId = 1L;
+        String URL = END_POINT_PATH + "/" + userId;
+
+        UserRequest request = new UserRequest();
+        request.setUsername("user99");
+        request.setPassword("{noop}13579");
+
+        UserResponse updatedUserResponse = new UserResponse();
+        updatedUserResponse.setId(userId);
+        updatedUserResponse.setUsername("user99");
+
+        when(userService.update(userId, request)).thenReturn(ResponseEntity.ok(updatedUserResponse));
+
+        mockMvc.perform(put(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.username").value("user99"))
                 .andDo(print());
     }
 }
